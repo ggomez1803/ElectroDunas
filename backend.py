@@ -12,6 +12,7 @@ def upload_files():
         return jsonify({'message': 'No file part'}), 400
 
     files = request.files.getlist('files')
+    os.makedirs(rutas.ruta_carpeta_consumos, exist_ok=True)
     for file in files:
         if file and file.filename.endswith('.csv'):
             filename = file.filename
