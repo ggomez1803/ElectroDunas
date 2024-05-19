@@ -35,6 +35,7 @@ def leer_archivos(ruta_carpeta: str) -> list:
 
     return dataframes
 
+#Función que agrega el sector del cliente
 def agregar_sector(dataframes, ruta_archivo_sector):
     """
     Agrega la columna 'Sector' a cada DataFrame en la lista
@@ -61,6 +62,7 @@ def agregar_sector(dataframes, ruta_archivo_sector):
 
     return dataframes
 
+#Función que verifica que todas las bases de datos tengan el mismo número de columnas y el mismo formato de fecha, además de imputar los datos faltantes utilizando el método KNN.
 def preprocesar_dataframes(dataframes):
     """
     Preprocesa una lista de DataFrames
@@ -68,13 +70,21 @@ def preprocesar_dataframes(dataframes):
     """
     # Verifica que todas las bases de datos tengan el mismo número de columnas
     columnas_primer_df = set(dataframes[0].columns)
-    todas_las_columnas_coinciden = all(set(df.columns) == columnas_primer_df for df in dataframes)
 
-    # Imprime el resultado
-    if todas_las_columnas_coinciden:
+    # Inicializa una lista para almacenar los nombres de los DataFrames que no coinciden
+    dfs_no_coinciden = []
+
+    # Verifica que todas las bases de datos tengan el mismo número de columnas
+    for i, df in enumerate(dataframes):
+        if set(df.columns) != columnas_primer_df:
+            dfs_no_coinciden.append(i)
+
+    # Imprime el resultado y lanza una excepción si las columnas no coinciden
+    if not dfs_no_coinciden:
         print("Todas las DataFrames tienen las mismas columnas.")
     else:
-        print("Las columnas de las DataFrames no coinciden.")
+        print(f"Las columnas de las siguientes DataFrames no coinciden con el primer DataFrame: {dfs_no_coinciden}")
+        raise ValueError("Las columnas de las DataFrames no coinciden.")
 
     # Verifica que todas las observaciones en la columna de fechas tengan el mismo formato
     formato_fecha = "%Y-%m-%d %H:%M:%S"
@@ -101,10 +111,8 @@ def preprocesar_dataframes(dataframes):
 
             # Actualiza el DataFrame en la lista
             dataframes[i] = df
-
-    # Crea el imputador KNN
-    imputador = KNNImputer(n_neighbors=3)
-
+    
+    # Verifica que todas las bases de datos no tengan datos faltantes
     # Inicializa un contador para los datos faltantes
     contador_datos_faltantes = 0
 
@@ -113,27 +121,35 @@ def preprocesar_dataframes(dataframes):
         # Cuenta los datos faltantes en el DataFrame actual
         datos_faltantes = df.isnull().sum().sum()
 
-        # Agrega al contador
-        contador_datos_faltantes += datos_faltantes
+        # Si hay datos faltantes, los imputa
+        if datos_faltantes > 0:
+            # Agrega al contador
+            contador_datos_faltantes += datos_faltantes
 
-        # Separa la columna 'Fecha'
-        fechas = df['Fecha']
-        df = df.drop(columns='Fecha')
+            # Separa la columna 'Fecha'
+            fechas = df['Fecha']
+            df = df.drop(columns='Fecha')
 
-        # Imputa los datos faltantes con el imputador KNN
-        df_imputado = imputador.fit_transform(df)
+            # Crea el imputador KNN
+            imputador = KNNImputer(n_neighbors=3)
 
-        # Convierte el resultado (que es un array de numpy) de nuevo a un DataFrame
-        df = pd.DataFrame(df_imputado, columns=df.columns)
+            # Imputa los datos faltantes con el imputador KNN
+            df_imputado = imputador.fit_transform(df)
 
-        # Vuelve a añadir la columna 'Fecha'
-        df['Fecha'] = fechas
+            # Convierte el resultado (que es un array de numpy) de nuevo a un DataFrame
+            df = pd.DataFrame(df_imputado, columns=df.columns)
+
+            # Vuelve a añadir la columna 'Fecha'
+            df['Fecha'] = fechas
 
         # Actualiza el DataFrame en la lista
         dataframes[i] = df
 
     # Imprime el número total de datos faltantes que se tuvieron que cambiar
-    print(f"Se tuvieron que cambiar {contador_datos_faltantes} datos faltantes.")
+    if contador_datos_faltantes > 0:
+        print(f"Se tuvieron que cambiar {contador_datos_faltantes} datos faltantes.")
+    else:
+        print("No se encontraron datos faltantes.")
 
     return dataframes
 
@@ -144,7 +160,7 @@ def agregar_col_fecha(df: pd.DataFrame) -> pd.DataFrame:
     df: DataFrame al que se le agregará la columna de fecha
     """
     # Dar formato de fecha a la columna de fecha
-    df['Fecha'] = pd.to_datetime(df['Fecha'])
+    df['Fecha'] = pd.to_datetime(df['Fecha'], format='%Y-%m-%d %H:%M:%S')
     # Crear una columna de mes
     df['Mes'] = df['Fecha'].dt.month
     # Crear una columna de año
@@ -162,9 +178,44 @@ def agregar_col_fecha(df: pd.DataFrame) -> pd.DataFrame:
     # Crear columna para horario laboral. 1 para turno 1 y 2 para turno 2
     df['Horario_laboral'] = df['Hora'].apply(lambda x: 1 if x in range(8, 19) else 0)
     # Crear columna para día de la semana
-    df['Dia_semana'] = df['Fecha'].apply(lambda x: dt.datetime.strptime(x, '%m/%d/%Y').weekday())
+    df['Dia_semana'] = df['Fecha'].apply(lambda x: dt.datetime.strptime(x, '%d/%m/%Y').weekday())
     
     return df
+
+def agregar_col_fecha_lista(dataframes: list) -> list:
+    """
+    Agrega una columna con la fecha a cada DataFrame en la lista
+    dataframes: Lista de DataFrames
+    """
+    # Itera sobre cada DataFrame en la lista
+    for i in range(len(dataframes)):
+        df = dataframes[i]
+        
+        # Dar formato de fecha a la columna de fecha
+        df['Fecha'] = pd.to_datetime(df['Fecha'], format='%Y-%m-%d %H:%M:%S')
+        # Crear una columna de mes
+        df['Mes'] = df['Fecha'].dt.month
+        # Crear una columna de año
+        df['Año'] = df['Fecha'].dt.year
+        # Crear una columna de día
+        df['Dia'] = df['Fecha'].dt.day
+        # Crear columna de hora
+        df['Hora'] = df['Fecha'].dt.hour
+        # Crear una columna de nombre del día
+        df['Nombre_dia'] = df['Fecha'].dt.day_name()
+        # Cambiar el formato de la fecha
+        df['Fecha'] = df['Fecha'].dt.strftime('%d/%m/%Y')
+        # Crear columna para fin de semana
+        df['Fin_de_semana'] = df['Nombre_dia'].apply(lambda x: 1 if x in ['Saturday', 'Sunday'] else 0)
+        # Crear columna para horario laboral. 1 para turno 1 y 2 para turno 2
+        df['Horario_laboral'] = df['Hora'].apply(lambda x: 1 if x in range(8, 19) else 0)
+        # Crear columna para día de la semana
+        df['Dia_semana'] = df['Fecha'].apply(lambda x: dt.datetime.strptime(x, '%d/%m/%Y').weekday())
+        
+        # Actualiza el DataFrame en la lista
+        dataframes[i] = df
+
+    return dataframes
 
 # Función que agrega las columnas Potencia Aparente y Factor de Potencia al dataframe
 def agregar_factor_potencia(df: pd.DataFrame) -> pd.DataFrame:
@@ -190,25 +241,83 @@ def agregar_desequilibrio_voltaje(df: pd.DataFrame) -> pd.DataFrame:
     
     return df
 
-# Función para remover los datos atípicos del dataframe
+def agregar_factor_potencia_lista(dataframes: list) -> list:
+    """
+    Agrega una columna con el factor de potencia a cada DataFrame en la lista
+    dataframes: Lista de DataFrames
+    """
+    # Itera sobre cada DataFrame en la lista
+    for i in range(len(dataframes)):
+        df = dataframes[i]
+        
+        # Calcular el factor de potencia
+        df['Potencia_Aparente'] = np.sqrt(df['Active_energy']**2 + df['Reactive_energy']**2)
+        df['Factor_Potencia_%'] = (df['Active_energy'] / (df['Potencia_Aparente'] + 1e-10))
+        
+        # Actualiza el DataFrame en la lista
+        dataframes[i] = df
+
+    return dataframes
+
+def agregar_desequilibrio_voltaje_lista(dataframes: list) -> list:
+    """
+    Agrega una columna con el desequilibrio de voltaje a cada DataFrame en la lista
+    dataframes: Lista de DataFrames
+    """
+    # Itera sobre cada DataFrame en la lista
+    for i in range(len(dataframes)):
+        df = dataframes[i]
+        
+        # Calcular el desequilibrio de voltaje
+        df['Desequilibrio_Voltaje'] = abs(df['Voltaje_FA'] - df['Voltaje_FC'])
+        df['Desequilibrio_Voltaje_%'] = (df['Desequilibrio_Voltaje'] / (df[['Voltaje_FA', 'Voltaje_FC']].min(axis=1) + 1e-10))
+        
+        # Actualiza el DataFrame en la lista
+        dataframes[i] = df
+
+    return dataframes
+
+#Función para unir todos los dataframes
+def unir_dataframes(dataframes: list) -> pd.DataFrame:
+    """
+    Une todas las DataFrames en la lista en una sola DataFrame
+    dataframes: Lista de DataFrames
+    """
+    # Une todas las DataFrames
+    df_consolidada = pd.concat(dataframes, ignore_index=True)
+
+    return df_consolidada
+
+
 def identificar_outliers(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Remueve los datos atípicos de un DataFrame
-    df: DataFrame al que se le removerán los datos atípicos
+    Identifica los datos atípicos en un DataFrame por cada sector
+    df: DataFrame al que se le identificarán los datos atípicos
     """
-    # Calcular el rango intercuartílico para el factor de potencia
-    Q1 = df['Factor_Potencia_%'].quantile(0.25)
-    Q3 = df['Factor_Potencia_%'].quantile(0.75)
-    IQR = Q3 - Q1
-    # Identificar los outliers en 'Factor_Potencia_%'
-    df['Anomalia_FP'] = ((df['Factor_Potencia_%'] < (Q1 - 1.5 * IQR)) | (df['Factor_Potencia_%'] > (Q3 + 1.5 * IQR))).astype(np.int)
+    # Función para identificar outliers en un grupo
+    def identificar_outliers_grupo(grupo):
+        # Calcular el rango intercuartílico para el factor de potencia
+        Q1_FP = grupo['Factor_Potencia_%'].quantile(0.25)
+        Q3_FP = grupo['Factor_Potencia_%'].quantile(0.75)
+        IQR_FP = Q3_FP - Q1_FP
 
-    # Calcular el rango intercuartílico para el 'Desequilibrio_Voltaje_%'
-    Q1 = df['Desequilibrio_Voltaje_%'].quantile(0.25)
-    Q3 = df['Desequilibrio_Voltaje_%'].quantile(0.75)
-    IQR = Q3 - Q1
+        # Calcular el rango intercuartílico para el 'Desequilibrio_Voltaje_%'
+        Q1_DV = grupo['Desequilibrio_Voltaje_%'].quantile(0.25)
+        Q3_DV = grupo['Desequilibrio_Voltaje_%'].quantile(0.75)
+        IQR_DV = Q3_DV - Q1_DV
 
-    # Identificar los outliers en 'Desequilibrio_Voltaje_%'
-    df['Anomalias_Voltaje'] = ((df['Desequilibrio_Voltaje_%'] < (Q1 - 1.5 * IQR)) | (df['Desequilibrio_Voltaje_%'] > (Q3 + 1.5 * IQR))).astype(np.int)
-    
+        # Identificar los outliers en 'Factor_Potencia_%' y 'Desequilibrio_Voltaje_%'
+        grupo['Anomalia'] = (
+            (grupo['Factor_Potencia_%'] < (Q1_FP - 1.5 * IQR_FP)) | 
+            (grupo['Factor_Potencia_%'] > (Q3_FP + 1.5 * IQR_FP)) |
+            (grupo['Desequilibrio_Voltaje_%'] < (Q1_DV - 1.5 * IQR_DV)) | 
+            (grupo['Desequilibrio_Voltaje_%'] > (Q3_DV + 1.5 * IQR_DV))
+        ).astype(np.int)
+        
+        return grupo
+
+    # Aplica la función a cada grupo de sector
+    df = df.groupby('Sector').apply(identificar_outliers_grupo)
+
     return df
+
