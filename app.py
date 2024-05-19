@@ -7,13 +7,12 @@ import pandas as pd
 # Leer los archivos de la carpeta 'datos'
 dataframes = fp.leer_archivos(rutas.ruta_carpeta_consumos)
 
-# Agregar columna de cliente a cada DataFrame
-for i, df in enumerate(dataframes):
-    dataframes[i] = fp.agregar_col_cliente(df, i+1)
-
 # Agregar columna de fecha a cada DataFrame
 for i, df in enumerate(dataframes):
     dataframes[i] = fp.agregar_col_fecha(df)
+    dataframes[i] = fp.agregar_factor_potencia(df)
+    dataframes[i] = fp.agregar_desequilibrio_voltaje(df)
+    dataframes[i] = fp.identificar_outliers(df)
 
 # Definición de columnas para el proceso de clustering
 ['Active_energy', 'Reactive_energy', 'Voltaje_FA', 'Horario_laboral', 'Dia_semana']
