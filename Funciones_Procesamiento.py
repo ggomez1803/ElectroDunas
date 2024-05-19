@@ -153,35 +153,6 @@ def preprocesar_dataframes(dataframes):
 
     return dataframes
 
-# Función que agrega la columna fecha a un DataFrame
-def agregar_col_fecha(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Agrega una columna con la fecha a un DataFrame y la convierte a formato de fecha
-    df: DataFrame al que se le agregará la columna de fecha
-    """
-    # Dar formato de fecha a la columna de fecha
-    df['Fecha'] = pd.to_datetime(df['Fecha'], format='%Y-%m-%d %H:%M:%S')
-    # Crear una columna de mes
-    df['Mes'] = df['Fecha'].dt.month
-    # Crear una columna de año
-    df['Año'] = df['Fecha'].dt.year
-    # Crear una columna de día
-    df['Dia'] = df['Fecha'].dt.day
-    # Crear columna de hora
-    df['Hora'] = df['Fecha'].dt.hour
-    # Crear una columna de nombre del día
-    df['Nombre_dia'] = df['Fecha'].dt.day_name()
-    # Cambiar el formato de la fecha
-    df['Fecha'] = df['Fecha'].dt.strftime('%d/%m/%Y')
-    # Crear columna para fin de semana
-    df['Fin_de_semana'] = df['Nombre_dia'].apply(lambda x: 1 if x in ['Saturday', 'Sunday'] else 0)
-    # Crear columna para horario laboral. 1 para turno 1 y 2 para turno 2
-    df['Horario_laboral'] = df['Hora'].apply(lambda x: 1 if x in range(8, 19) else 0)
-    # Crear columna para día de la semana
-    df['Dia_semana'] = df['Fecha'].apply(lambda x: dt.datetime.strptime(x, '%d/%m/%Y').weekday())
-    
-    return df
-
 def agregar_col_fecha_lista(dataframes: list) -> list:
     """
     Agrega una columna con la fecha a cada DataFrame en la lista
@@ -248,15 +219,7 @@ def agregar_factor_potencia_lista(dataframes: list) -> list:
     """
     # Itera sobre cada DataFrame en la lista
     for i in range(len(dataframes)):
-        df = dataframes[i]
-        
-        # Calcular el factor de potencia
-        df['Potencia_Aparente'] = np.sqrt(df['Active_energy']**2 + df['Reactive_energy']**2)
-        df['Factor_Potencia_%'] = (df['Active_energy'] / (df['Potencia_Aparente'] + 1e-10))
-        
-        # Actualiza el DataFrame en la lista
-        dataframes[i] = df
-
+        dataframes[i] = agregar_factor_potencia(dataframes[i])
     return dataframes
 
 def agregar_desequilibrio_voltaje_lista(dataframes: list) -> list:
@@ -266,15 +229,7 @@ def agregar_desequilibrio_voltaje_lista(dataframes: list) -> list:
     """
     # Itera sobre cada DataFrame en la lista
     for i in range(len(dataframes)):
-        df = dataframes[i]
-        
-        # Calcular el desequilibrio de voltaje
-        df['Desequilibrio_Voltaje'] = abs(df['Voltaje_FA'] - df['Voltaje_FC'])
-        df['Desequilibrio_Voltaje_%'] = (df['Desequilibrio_Voltaje'] / (df[['Voltaje_FA', 'Voltaje_FC']].min(axis=1) + 1e-10))
-        
-        # Actualiza el DataFrame en la lista
-        dataframes[i] = df
-
+        dataframes[i] = agregar_desequilibrio_voltaje(dataframes[i])
     return dataframes
 
 #Función para unir todos los dataframes
@@ -312,7 +267,7 @@ def identificar_outliers(df: pd.DataFrame) -> pd.DataFrame:
             (grupo['Factor_Potencia_%'] > (Q3_FP + 1.5 * IQR_FP)) |
             (grupo['Desequilibrio_Voltaje_%'] < (Q1_DV - 1.5 * IQR_DV)) | 
             (grupo['Desequilibrio_Voltaje_%'] > (Q3_DV + 1.5 * IQR_DV))
-        ).astype(np.int)
+        ).astype(int)
         
         return grupo
 

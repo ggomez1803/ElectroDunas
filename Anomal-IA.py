@@ -1,6 +1,7 @@
 # backend.py
 from flask import Flask, request, jsonify, render_template, send_from_directory
 import os
+import sys
 import subprocess
 import json
 
@@ -41,10 +42,21 @@ def execute_script():
     except subprocess.CalledProcessError as e:
         return jsonify({'message': 'Error al ejecutar el script', 'error': str(e)}), 500
 
+def get_config_path():
+    # Si la aplicación está "congelada" (ejecutable generado por PyInstaller)
+    if getattr(sys, 'frozen', False):
+        # La ruta base es el directorio donde se encuentra el ejecutable
+        base_path = sys._MEIPASS
+    else:
+        # La ruta base es el directorio donde se encuentra el script de Python
+        base_path = os.path.abspath(os.path.dirname(__file__))
+    return os.path.join(base_path, 'config.json')
+
 # Ruta para obtener la configuración actual
 @app.route('/get-config', methods=['GET'])
 def get_config():
-    with open('config.json', 'r') as config_file:
+    config_path = get_config_path()
+    with open(config_path, 'r') as config_file:
         config = json.load(config_file)
     return jsonify(config)
 
