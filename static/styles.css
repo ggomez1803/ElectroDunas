@@ -1,0 +1,129 @@
+/* styles.css */
+/* Estilos para el banner */
+.banner img {
+    width: 100%; /* Asegura que la imagen ocupe todo el ancho de la pantalla */
+    height: auto; /* Mantiene la proporción de la imagen */
+    display: block; /* Elimina cualquier espacio extra alrededor de la imagen */
+}
+
+/* Utiliza la fuente Arvo en todo el sitio web */
+body {
+    font-family: 'Arvo', serif;
+    background-color: rgb(6, 85, 110);
+    color:#ffffff
+}
+/* Estilos para el menú lateral */
+.sidebar {
+    height: 100%;
+    width: 250px; /* Ancho del menú expandido */
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #181635;
+    overflow-x: hidden;
+    transition: width 0.5s; /* Efecto de transición al expandir/minimizar */
+    padding-top: 60px; /* Espacio para el botón de toggle */
+}
+
+.sidebar .toggle-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.sidebar a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #ffffff; /* Color del texto */
+    display: block;
+    transition: color 0.3s;
+}
+
+.sidebar a:hover {
+    color: #f1f1f1; /* Color del texto al pasar el mouse por encima */
+}
+
+/* Estilo del menú cuando está minimizado */
+.sidebar.minimized {
+    width: 50px; /* Ancho del menú minimizado */
+}
+
+/* Oculta el texto de los enlaces cuando el menú está minimizado */
+.sidebar.minimized a {
+    font-size: 0; /* Establece el tamaño de fuente a 0 para ocultar el texto */
+    padding-left: 15px; /* Ajusta el padding si es necesario */
+    white-space: nowrap; /* Asegura que el texto no se envuelva */
+    overflow: hidden; /* Oculta cualquier contenido que desborde */
+}
+
+/* Estilos para el contenido principal */
+.main-content {
+    transition: margin-left 0.5s;
+    padding: 16px;
+    margin-left: 250px; /* Asegúrate de que coincide con el ancho del menú expandido */
+}
+
+/* Ajusta el margen cuando el menú está minimizado */
+.main-content.expanded {
+    margin-left: 50px;
+}
+
+/* Estilos para los contenedores de las secciones específicas */
+.upload-container, .execute-container, .config-container, .about-container {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilos para los títulos de las secciones */
+.upload-container h2, .config-container h2, .about-container h2 {
+    margin-bottom: 10px;
+}
+
+/* Estilos para los botones */
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #a82b2b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Arvo', serif;
+}
+
+button:hover {
+    background-color: #daac17;
+}
+
+/* Estilos para los grupos de entrada en la sección de configuración */
+.config-container .input-group {
+    margin-bottom: 10px;
+}
+
+.config-container .input-group label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.config-container .input-group input[type="text"] {
+    width: calc(100% - 100px); /* Ajusta el ancho para dejar espacio para el botón */
+    display: inline-block;
+    width: 100%;
+    color: black;
+}
+
+.config-container .input-group button {
+    width: 100px; /* Ancho del botón Guardar */
+    display: inline-block;
+    margin-left: 10px; /* Espacio entre la caja de texto y el botón */
+}

@@ -1,0 +1,77 @@
+<!-- templates/interfaz.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Archivos y Ejecutar Script</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="/static/scripts.js"></script>
+</head>
+<body>
+     <!-- Sección del banner -->
+     <div class="banner">
+        <img src="{{ url_for('static', filename='images/banner.png') }}" alt="Banner">
+    </div>
+
+    <!-- Sección de la barra de navegación -->
+    <div id="sidebar" class="sidebar">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <div class="menu-content">
+            <a href="#" id="runCluster">Correr Cluster</a>
+            <a href="#" id="configuracion">Configuración</a>
+            <a href="#" id="about">About</a>
+        </div>
+    </div>
+    <div class="main-content">
+        <!-- Sección Correr Cluster -->
+        <div id="clusterSection" class="content-section">
+            <div class="upload-container">
+                <h2>Subir Archivos CSV</h2>
+                <form id="uploadForm"  enctype="multipart/form-data">
+                    <input type="file" name="files" multiple>
+                    <button type="submit">Subir Archivos</button>
+                </form>        
+            </div>
+            <div class="execute-container">
+                <button id="executeScript">Ejecutar Script</button>
+            </div>
+        </div>
+
+        <!-- Sección Configuración -->
+        <div id="configSection" class="content-section" style="display: none;">
+            <div class="config-container">
+                <h2>Configuración</h2>
+                <form id="configForm">
+                    <div class="input-group">
+                        <label for="rutaCarpetaConsumos">Ruta Carpeta Consumos:</label>
+                        <input type="text" id="rutaCarpetaConsumos" name="rutaCarpetaConsumos">
+                        <button type="button" onclick="guardarConfig('ruta_carpeta_consumos', 'rutaCarpetaConsumos')">Guardar</button>
+                    </div>
+                    <div class="input-group">
+                        <label for="rutaSectorClientes">Ruta Sector Clientes:</label>
+                        <input type="text" id="rutaSectorClientes" name="rutaSectorClientes">
+                        <button type="button" onclick="guardarConfig('ruta_sector_clientes', 'rutaSectorClientes')">Guardar</button>
+                    </div>
+                    <div class="input-group">
+                        <label for="rutaCarpetaExportacion">Ruta Carpeta Exportación:</label>
+                        <input type="text" id="rutaCarpetaExportacion" name="rutaCarpetaExportacion">
+                        <button type="button" onclick="guardarConfig('ruta_carpeta_exportacion', 'rutaCarpetaExportacion')">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sección About -->
+        <div id="aboutSection" class="content-section" style="display: none;">
+            <div class="about-container">
+                <h2>About</h2>
+                <p id="aboutContent">Aquí se mostrarán las rutas de configuración actuales.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>
