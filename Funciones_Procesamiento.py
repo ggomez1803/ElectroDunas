@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import datetime as dt
+from sklearn.impute import KNNImputer
 
 # Funciones de procesamiento
 def leer_archivos(ruta_carpeta: str) -> list:
@@ -31,6 +32,108 @@ def leer_archivos(ruta_carpeta: str) -> list:
             # Agregar una columna con el nombre del cliente
             df['Cliente'] = nombre_cliente
             dataframes.append(df)
+
+    return dataframes
+
+def agregar_sector(dataframes, ruta_archivo_sector):
+    """
+    Agrega la columna 'Sector' a cada DataFrame en la lista
+    dataframes: Lista de DataFrames
+    ruta_archivo_sector: Ruta del archivo Excel que contiene los sectores
+    """
+    # Lee el archivo Excel
+    df_sector = pd.read_excel(ruta_archivo_sector)
+
+    # Cambia los nombres de las columnas
+    nuevos_nombres = ['Cliente', 'Sector']  # Lista con los nuevos nombres
+    df_sector.columns = nuevos_nombres
+
+    # Ajusta la columna 'Cliente' para que coincida con los DataFrames
+    df_sector['Cliente'] = df_sector['Cliente'].apply(lambda x: "Cliente " + str(x.split(' ')[1]))
+
+    # Itera sobre cada DataFrame en la lista para agregar la columna sector
+    for i, df in enumerate(dataframes):
+        # Combina el DataFrame con df_sector basándose en la columna 'Cliente'
+        df_combinado = pd.merge(df, df_sector, on='Cliente', how='left')
+
+        # Actualiza el DataFrame en la lista
+        dataframes[i] = df_combinado
+
+    return dataframes
+
+def preprocesar_dataframes(dataframes):
+    """
+    Preprocesa una lista de DataFrames
+    dataframes: Lista de DataFrames a preprocesar
+    """
+    # Verifica que todas las bases de datos tengan el mismo número de columnas
+    columnas_primer_df = set(dataframes[0].columns)
+    todas_las_columnas_coinciden = all(set(df.columns) == columnas_primer_df for df in dataframes)
+
+    # Imprime el resultado
+    if todas_las_columnas_coinciden:
+        print("Todas las DataFrames tienen las mismas columnas.")
+    else:
+        print("Las columnas de las DataFrames no coinciden.")
+
+    # Verifica que todas las observaciones en la columna de fechas tengan el mismo formato
+    formato_fecha = "%Y-%m-%d %H:%M:%S"
+    todas_las_fechas_coinciden = all(
+        all(pd.to_datetime(df['Fecha'], format=formato_fecha, errors='coerce').notnull())
+        for df in dataframes
+    )
+
+    # Imprime el resultado
+    if todas_las_fechas_coinciden:
+        print("Todas las observaciones en la columna de fechas tienen el mismo formato.")
+    else:
+        print("NO todas las observaciones en la columna de fechas tienen el mismo formato. Se inicia proceso de transformación al formato ideal.")
+        # Itera sobre cada DataFrame en la lista
+        for i, df in enumerate(dataframes):
+            try:
+                # Intenta convertir las fechas al formato especificado
+                df['Fecha'] = pd.to_datetime(df['Fecha'], format=formato_fecha)
+            except ValueError as e:
+                print(f"Error al convertir las fechas en el DataFrame {i}: {e}")
+                # Aquí puedes manejar el error como prefieras
+                # Por ejemplo, podrías reemplazar las fechas no válidas con NaT
+                df['Fecha'] = pd.to_datetime(df['Fecha'], format=formato_fecha, errors='coerce')
+
+            # Actualiza el DataFrame en la lista
+            dataframes[i] = df
+
+    # Crea el imputador KNN
+    imputador = KNNImputer(n_neighbors=3)
+
+    # Inicializa un contador para los datos faltantes
+    contador_datos_faltantes = 0
+
+    # Itera sobre cada DataFrame en la lista
+    for i, df in enumerate(dataframes):
+        # Cuenta los datos faltantes en el DataFrame actual
+        datos_faltantes = df.isnull().sum().sum()
+
+        # Agrega al contador
+        contador_datos_faltantes += datos_faltantes
+
+        # Separa la columna 'Fecha'
+        fechas = df['Fecha']
+        df = df.drop(columns='Fecha')
+
+        # Imputa los datos faltantes con el imputador KNN
+        df_imputado = imputador.fit_transform(df)
+
+        # Convierte el resultado (que es un array de numpy) de nuevo a un DataFrame
+        df = pd.DataFrame(df_imputado, columns=df.columns)
+
+        # Vuelve a añadir la columna 'Fecha'
+        df['Fecha'] = fechas
+
+        # Actualiza el DataFrame en la lista
+        dataframes[i] = df
+
+    # Imprime el número total de datos faltantes que se tuvieron que cambiar
+    print(f"Se tuvieron que cambiar {contador_datos_faltantes} datos faltantes.")
 
     return dataframes
 
