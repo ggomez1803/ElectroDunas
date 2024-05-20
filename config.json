@@ -1,5 +1,5 @@
 {
-    "ruta_carpeta_consumos": "C:\\Users\\ZU956KH\\OneDrive - EY\\Documents\\Personal",
-    "ruta_sector_clientes": "C:\\Users\\ZU956KH\\OneDrive - EY\\Documents\\Personal\\MIAD",
-    "ruta_carpeta_exportacion": "C:\\Users\\ZU956KH\\OneDrive - EY\\Documents\\Personal\\MIAD"
+    "ruta_carpeta_consumos": "C:\\Users\\ZU956KH\\OneDrive - EY\\Documents\\Personal\\MIAD\\Prueba_Datos_Input",
+    "ruta_sector_clientes": "C:\\Users\\ZU956KH\\OneDrive - EY\\Documents\\Personal\\MIAD\\ElectroDunas\\Datos Electro Dunas\\sector_economico_clientes.xlsx",
+    "ruta_carpeta_exportacion": "C:\\Users\\ZU956KH\\OneDrive - EY\\Documents\\Personal\\MIAD\\Prueba_Output"
 }

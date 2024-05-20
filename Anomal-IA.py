@@ -1,9 +1,8 @@
 # backend.py
 from flask import Flask, request, jsonify, render_template, send_from_directory
 import os
-import sys
-import subprocess
 import json
+from app import procesar_y_clusterizar_datos
 
 app = Flask(__name__)
 
@@ -15,8 +14,10 @@ def index():
 # Ruta para subir archivos
 @app.route('/upload', methods=['POST'])
 def upload_files():
+    # Obtener la ruta del archivo que está en la dirección ./_internal/config.json
+    config_path = get_config_path()
     # Leer la configuración actual
-    with open('config.json', 'r') as config_file:
+    with open(config_path, 'r') as config_file:
         config = json.load(config_file)
     
     ruta_carpeta_consumos = config['ruta_carpeta_consumos']
@@ -35,22 +36,18 @@ def upload_files():
 # Ruta para ejecutar el script de Python
 @app.route('/execute-script', methods=['GET'])
 def execute_script():
-    # Asumiendo que tienes un script llamado 'app.py' que quieres ejecutar
     try:
-        subprocess.run(['python', 'app.py'], check=True)
+        # Llama a la función que procesa y clusteriza los datos
+        procesar_y_clusterizar_datos()
         return jsonify({'message': 'Script ejecutado correctamente'})
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         return jsonify({'message': 'Error al ejecutar el script', 'error': str(e)}), 500
 
 def get_config_path():
-    # Si la aplicación está "congelada" (ejecutable generado por PyInstaller)
-    if getattr(sys, 'frozen', False):
-        # La ruta base es el directorio donde se encuentra el ejecutable
-        base_path = sys._MEIPASS
-    else:
-        # La ruta base es el directorio donde se encuentra el script de Python
-        base_path = os.path.abspath(os.path.dirname(__file__))
-    return os.path.join(base_path, 'config.json')
+    # Obtener la ruta del archivo que está en la dirección ./_internal/config.json
+    base_path = os.path.abspath(os.path.dirname(__file__))
+    config_path = os.path.join(base_path, 'config.json')
+    return config_path
 
 # Ruta para obtener la configuración actual
 @app.route('/get-config', methods=['GET'])
@@ -62,7 +59,9 @@ def get_config():
 
 # Función auxiliar para actualizar el archivo config.json
 def update_config(config_key, new_path):
-    with open('config.json', 'r+') as config_file:
+    #with open('_internal/config.json', 'r+') as config_file:
+    config_path = get_config_path()
+    with open(config_path, 'r+') as config_file:
         config = json.load(config_file)
         config[config_key] = new_path  # Actualiza la ruta específica
         config_file.seek(0)  # Vuelve al inicio del archivo

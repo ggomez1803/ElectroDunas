@@ -1,6 +1,18 @@
-# Ruta de la carpeta que contiene los archivos CSV
-ruta_carpeta_consumos = './Datos Electro Dunas/'
-#Observamos y agregamos a una base de datos los sectores económicos de cada cliente
-ruta_sector_clientes = './Datos Electro Dunas/sector_economico_clientes.xlsx'
-# Ruta de la carpeta donde se exportarán los archivos CSV procesados
-ruta_carpeta_exportacion = './Datos_Procesados/'
+# rutas.py
+import json
+import os
+
+base_path = os.path.abspath(os.path.dirname(__file__))
+config_path = os.path.join(base_path, 'config.json')
+
+# Función para cargar las rutas de configuración desde config.json
+def cargar_rutas():
+    with open(config_path, 'r') as config_file:
+        config = json.load(config_file)
+    return config
+
+# Cargar las rutas y asignarlas a variables
+config_rutas = cargar_rutas()
+ruta_carpeta_consumos = config_rutas['ruta_carpeta_consumos']
+ruta_sector_clientes = config_rutas['ruta_sector_clientes']
+ruta_carpeta_exportacion = config_rutas['ruta_carpeta_exportacion']

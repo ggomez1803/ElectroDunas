@@ -119,5 +119,5 @@ def guardar_como_csv(df, nombre_archivo, ruta_exportacion):
     ruta_completa = os.path.join(ruta_exportacion, nombre_archivo)
     
     # Guardar el DataFrame en la ruta completa
-    df.to_csv(ruta_completa, index=False)
+    df.to_csv(ruta_completa, index=False, encoding='latin-1')
 

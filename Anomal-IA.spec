@@ -5,7 +5,7 @@ a = Analysis(
     ['Anomal-IA.py'],
     pathex=[],
     binaries=[],
-    datas=[('config.json', '.'), ('templates', 'templates'), ('static', 'static')],
+    datas=[('config.json', '.'), ('templates', 'templates'), ('static', 'static'), ('app.py', '.'), ('Funciones_Cluster.py', '.'), ('Funciones_Procesamiento.py', '.'), ('rutas.py', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
