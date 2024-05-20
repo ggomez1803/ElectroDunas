@@ -1,12 +1,24 @@
+// Función para mostrar el ícono de "Cargando..."
+function mostrarCargando() {
+  document.getElementById('loading').style.display = 'block';
+}
+
+// Función para ocultar el ícono de "Cargando..."
+function ocultarCargando() {
+  document.getElementById('loading').style.display = 'none';
+}
+
 // Evento para manejar la subida de archivos
 document.getElementById('uploadForm').addEventListener('submit', function(e) {
   e.preventDefault();
+  mostrarCargando();
   var formData = new FormData(this);
   fetch('/upload', {
       method: 'POST',
       body: formData
   })
   .then(response => {
+      ocultarCargando();
       if (!response.ok) {
           throw new Error('Network response was not ok');
       }
@@ -23,17 +35,25 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
 
 // Evento para manejar la ejecución del script de Python
 document.getElementById('executeScript').addEventListener('click', function() {
+  mostrarCargando();
   fetch('/execute-script', {
       method: 'GET'
-  }).then(response => response.json())
-    .then(data => {
-      alert(data.message);
-      console.log(data);
-    })
-    .catch(error => {
-      alert('Error: ' + error);
-      console.error('Error:', error);
-    });
+  }).then(response => {
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return response.json(); // Asegúrate de devolver el resultado aquí
+  })
+  .then(data => {
+    ocultarCargando();
+    alert(data.message); // Ahora data debería ser un objeto definido
+    console.log(data);
+  })
+  .catch(error => {
+    ocultarCargando(); // Asegúrate de ocultar el cargando incluso si hay un error
+    alert('Error: ' + error);
+    console.error('Error:', error);
+  });
 });
 
 // Función para enviar la nueva ruta al servidor y actualizar config.json

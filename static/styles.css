@@ -54,17 +54,17 @@ body {
 
 /* Oculta el texto de los enlaces cuando el menú está minimizado */
 .sidebar.minimized a {
-    font-size: 0; /* Establece el tamaño de fuente a 0 para ocultar el texto */
-    padding-left: 15px; /* Ajusta el padding si es necesario */
-    white-space: nowrap; /* Asegura que el texto no se envuelva */
-    overflow: hidden; /* Oculta cualquier contenido que desborde */
+    font-size: 0; 
+    padding-left: 15px; 
+    white-space: nowrap; 
+    overflow: hidden; 
 }
 
 /* Estilos para el contenido principal */
 .main-content {
     transition: margin-left 0.5s;
     padding: 16px;
-    margin-left: 250px; /* Asegúrate de que coincide con el ancho del menú expandido */
+    margin-left: 250px;
 }
 
 /* Ajusta el margen cuando el menú está minimizado */
@@ -116,7 +116,7 @@ button:hover {
 }
 
 .config-container .input-group input[type="text"] {
-    width: calc(100% - 100px); /* Ajusta el ancho para dejar espacio para el botón */
+    width: calc(100% - 100px); 
     display: inline-block;
     width: 100%;
     color: black;
@@ -126,4 +126,13 @@ button:hover {
     width: 100px; /* Ancho del botón Guardar */
     display: inline-block;
     margin-left: 10px; /* Espacio entre la caja de texto y el botón */
+}
+
+/* Estilos para el ícono de "Cargando..." */
+.loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
 }
